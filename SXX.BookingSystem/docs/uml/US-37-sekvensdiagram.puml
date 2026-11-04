@@ -1,22 +1,31 @@
+
 @startuml
 title US-37 - Registrera återlämning
 
-autonumber
 skinparam shadowing false
+skinparam sequenceMessageAlign center
+autonumber
 
-actor Personal
+actor "Personal" as Personal
 participant "Bokningssystem" as System
 participant "ReturnService" as Service
 participant "BookingRepository" as Repository
-participant "Booking" as Booking
 
-== Sök bokning ==
+== 1. Sök bokning ==
 
 Personal -> System : Sök bokning(bokningsnummer)
+activate System
+
 System -> Service : GetBooking(bokningsnummer)
+activate Service
+
 Service -> Repository : GetBooking(bokningsnummer)
+activate Repository
 Repository --> Service : Booking eller null
+deactivate Repository
+
 Service --> System : Booking eller null
+deactivate Service
 
 alt Bokningen saknas
     System --> Personal : Visa "Bokningen hittades inte"
@@ -29,29 +38,55 @@ else Bokningen finns
 
     else Status är CheckedOut
 
-        == Registrera återlämning ==
+        == 2. Bekräfta återlämning ==
 
         Personal -> System : Bekräfta återlämning
+
         System -> Service : RegisterReturn(bokningsnummer)
+        activate Service
 
-        Service -> Repository : GetBooking(bokningsnummer)
-        Repository --> Service : Booking eller null
+        Service -> Service : Registrera återlämningstid
+        Service -> Service : Förbered statusändring till Returned
 
-        alt Bokningen saknas eller har fel status
-            Service --> System : ReturnResult(Failed)
-            System --> Personal : Visa felmeddelande
+        == 3. Kontrollera och spara ==
 
-        else Bokningen har status CheckedOut
-            Service -> Booking : MarkAsReturned()
-            Booking --> Service : Status = Returned
+        Service -> Repository : TryRegisterReturn(bokningsnummer, returnedAt)
+        activate Repository
 
-            Service -> Repository : SaveBooking(booking)
+        note right of Repository
+          Kontrollera aktuell bokningsstatus.
+
+          Om status är CheckedOut:
+          - Spara återlämningstid
+          - Ändra status till Returned
+
+          Ändringarna genomförs tillsammans.
+
+          Vid fel ska tidigare status
+          och data bevaras.
+        end note
+
+        alt Status är inte längre CheckedOut
+            Repository --> Service : InvalidStatus
+            Service --> System : ReturnResult(InvalidStatus)
+            System --> Personal : Visa "Återlämningen kan inte registreras"
+
+        else Lagringen misslyckas
+            Repository --> Service : SaveFailed
+            Service --> System : ReturnResult(SaveFailed)
+            System --> Personal : Visa "Återlämningen kunde inte sparas"
+
+        else Registreringen lyckas
             Repository --> Service : Success
-
             Service --> System : ReturnResult(Success)
             System --> Personal : Visa bekräftelse
         end
+
+        deactivate Repository
+        deactivate Service
     end
 end
+
+deactivate System
 
 @enduml
