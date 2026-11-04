@@ -1,0 +1,57 @@
+@startuml
+title US-37 - Registrera återlämning
+
+autonumber
+skinparam shadowing false
+
+actor Personal
+participant "Bokningssystem" as System
+participant "ReturnService" as Service
+participant "BookingRepository" as Repository
+participant "Booking" as Booking
+
+== Sök bokning ==
+
+Personal -> System : Sök bokning(bokningsnummer)
+System -> Service : GetBooking(bokningsnummer)
+Service -> Repository : GetBooking(bokningsnummer)
+Repository --> Service : Booking eller null
+Service --> System : Booking eller null
+
+alt Bokningen saknas
+    System --> Personal : Visa "Bokningen hittades inte"
+
+else Bokningen finns
+    System --> Personal : Visa bokningsuppgifter
+
+    alt Status är inte CheckedOut
+        System --> Personal : Visa "Uthyrningen är inte påbörjad"
+
+    else Status är CheckedOut
+
+        == Registrera återlämning ==
+
+        Personal -> System : Bekräfta återlämning
+        System -> Service : RegisterReturn(bokningsnummer)
+
+        Service -> Repository : GetBooking(bokningsnummer)
+        Repository --> Service : Booking eller null
+
+        alt Bokningen saknas eller har fel status
+            Service --> System : ReturnResult(Failed)
+            System --> Personal : Visa felmeddelande
+
+        else Bokningen har status CheckedOut
+            Service -> Booking : MarkAsReturned()
+            Booking --> Service : Status = Returned
+
+            Service -> Repository : SaveBooking(booking)
+            Repository --> Service : Success
+
+            Service --> System : ReturnResult(Success)
+            System --> Personal : Visa bekräftelse
+        end
+    end
+end
+
+@enduml
