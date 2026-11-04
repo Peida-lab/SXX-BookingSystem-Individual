@@ -21,10 +21,14 @@ while (true)
 {
     Console.WriteLine();
     Console.WriteLine("=== Testbokningar ===");
-    Console.WriteLine("1001 - Utlämnad från början");
-    Console.WriteLine("1002 - Bekräftad");
-    Console.WriteLine("1003 - Redan återlämnad");
-    Console.WriteLine("1004 - Avbokad");
+
+    // Visa bokningarnas aktuella status
+    foreach (string number in new[] { "1001", "1002", "1003", "1004" })
+    {
+        var booking = returnService.GetBooking(number);
+        Console.WriteLine($"{number} - {booking?.Status}");
+    }
+
     Console.WriteLine("0 - Avsluta programmet");
     Console.WriteLine();
 
@@ -37,36 +41,69 @@ while (true)
         break;
     }
 
+    if (string.IsNullOrWhiteSpace(bookingNumber))
+    {
+        Console.WriteLine("Du måste ange ett bokningsnummer.");
+        continue;
+    }
+
+    // Hämta bokningen
     var foundBooking = returnService.GetBooking(bookingNumber);
 
     if (foundBooking is null)
     {
-        Console.WriteLine("Bokningen hittades inte.");
+        Console.WriteLine($"Ingen bokning med nummer {bookingNumber} hittades.");
         continue;
     }
 
     Console.WriteLine($"Bokningsnummer: {foundBooking.BookingNumber}");
     Console.WriteLine($"Status: {foundBooking.Status}");
 
-    if (foundBooking.Status != BookingStatus.CheckedOut)
+    // Kontrollera bokningens status
+    switch (foundBooking.Status)
     {
-        Console.WriteLine("Uthyrningen är inte påbörjad eller är redan avslutad.");
-        continue;
+        case BookingStatus.Confirmed:
+            Console.WriteLine("Bokningen är bekräftad men utrustningen har inte lämnats ut.");
+            continue;
+
+        case BookingStatus.Returned:
+            Console.WriteLine("Den här bokningen är redan återlämnad.");
+            continue;
+
+        case BookingStatus.Cancelled:
+            Console.WriteLine("Bokningen är avbokad och kan inte återlämnas.");
+            continue;
+
+        case BookingStatus.CheckedOut:
+            break;
+
+        default:
+            Console.WriteLine("Bokningen har en ogiltig status.");
+            continue;
     }
 
-    Console.Write("Vill du registrera återlämningen? (j/n): ");
-    string answer = (Console.ReadLine() ?? "").Trim();
+    // Bekräfta återlämning
+    Console.Write("Vill du registrera återlämningen? (ja/nej): ");
+    string answer = (Console.ReadLine() ?? "").Trim().ToLowerInvariant();
 
-    if (!answer.Equals("j", StringComparison.OrdinalIgnoreCase))
+    if (answer == "n" || answer == "nej")
     {
         Console.WriteLine("Återlämningen avbröts.");
         continue;
     }
 
+    if (answer != "j" && answer != "ja")
+    {
+        Console.WriteLine("Ogiltigt svar. Skriv ja eller nej.");
+        continue;
+    }
+
+    // Registrera återlämningen
     var result = returnService.RegisterReturn(
         bookingNumber,
         DateTimeOffset.Now);
 
+    // Visa resultat
     switch (result)
     {
         case ReturnSaveResult.Success:
@@ -76,11 +113,11 @@ while (true)
             break;
 
         case ReturnSaveResult.InvalidStatus:
-            Console.WriteLine("Återlämningen kan inte registreras.");
+            Console.WriteLine("Återlämningen kunde inte registreras eftersom bokningens status har ändrats.");
             break;
 
         case ReturnSaveResult.SaveFailed:
-            Console.WriteLine("Återlämningen kunde inte sparas.");
+            Console.WriteLine("Ett fel uppstod vid lagringen. Återlämningen har inte registrerats.");
             break;
     }
 }
