@@ -2,50 +2,71 @@
 @startuml
 title US-37 - Registrera återlämning
 
+skinparam shadowing false
+
 |Personal|
 start
-:Sök bokning med bokningsnummer;
+:Ange bokningsnummer;
 
-|System|
+|Bokningssystem|
 :Hämta bokning;
 
 if (Finns bokningen?) then (Nej)
-  :Visa "Bokningen hittades inte";
-  stop
+    :Visa "Bokningen hittades inte";
+    stop
 else (Ja)
-  :Visa bokningsuppgifter;
+    :Visa bokningsuppgifter;
 endif
 
-if (Har bokningen status CheckedOut?) then (Nej)
-  :Visa "Uthyrningen är inte påbörjad";
-  stop
-else (Ja)
-  |Personal|
-  :Bekräfta återlämning;
-endif
-
-|System|
-:Registrera återlämningstid;
-:Förbered statusändring till Returned;
-
-:Kontrollera aktuell status och
-försök spara återlämningen;
-
-if (Är status fortfarande CheckedOut?) then (Nej)
-  :Visa "Återlämningen kan inte registreras";
-  stop
+if (Status är CheckedOut?) then (Nej)
+    :Visa felmeddelande
+    för aktuell bokningsstatus;
+    stop
 else (Ja)
 endif
 
-if (Lyckades lagringen?) then (Nej)
-  :Visa "Återlämningen kunde inte sparas";
-  :Behåll tidigare bokningsstatus;
-  stop
+|Personal|
+:Bekräfta återlämning
+(ja/nej);
+
+|Bokningssystem|
+if (Svar är ja eller j?) then (Nej)
+    if (Svar är nej eller n?) then (Ja)
+        :Visa "Återlämningen avbröts";
+    else (Nej)
+        :Visa "Ogiltigt svar";
+    endif
+    stop
 else (Ja)
-  :Spara återlämningstid och
-ändra bokningsstatus till Returned;
-  :Visa bekräftelse;
 endif
+
+:Hämta aktuell återlämningstid;
+
+|ReturnService|
+:Begär registrering av återlämning;
+
+|BookingRepository|
+:Kontrollera aktuell bokningsstatus;
+
+if (Status fortfarande CheckedOut?) then (Nej)
+    |Bokningssystem|
+    :Visa "Återlämningen kan inte registreras";
+    stop
+else (Ja)
+endif
+
+|BookingRepository|
+if (Simulerat lagringsfel?) then (Ja)
+    |Bokningssystem|
+    :Visa "Återlämningen kunde inte sparas";
+    stop
+else (Nej)
+    :Ändra status till Returned och
+    registrera återlämningstid;
+endif
+
+|Bokningssystem|
+:Visa bekräftelse och återlämningstid;
 
 stop
 @enduml
