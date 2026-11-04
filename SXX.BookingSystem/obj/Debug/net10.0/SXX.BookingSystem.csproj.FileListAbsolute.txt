@@ -1,0 +1,15 @@
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/bin/Debug/net10.0/SXX.BookingSystem
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/bin/Debug/net10.0/SXX.BookingSystem.deps.json
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/bin/Debug/net10.0/SXX.BookingSystem.runtimeconfig.json
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/bin/Debug/net10.0/SXX.BookingSystem.dll
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/bin/Debug/net10.0/SXX.BookingSystem.pdb
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.GeneratedMSBuildEditorConfig.editorconfig
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.AssemblyInfoInputs.cache
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.AssemblyInfo.cs
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.csproj.CoreCompileInputs.cache
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.sourcelink.json
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.dll
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/refint/SXX.BookingSystem.dll
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.pdb
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/SXX.BookingSystem.genruntimeconfig.cache
+/Users/alipeida/Documents/Projects/Anteckningar/Objektorienterad Analys/SXX-BookingSystem-Individual/SXX.BookingSystem/obj/Debug/net10.0/ref/SXX.BookingSystem.dll
