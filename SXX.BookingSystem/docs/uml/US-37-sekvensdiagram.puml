@@ -4,89 +4,70 @@ title US-37 - Registrera återlämning
 
 skinparam shadowing false
 skinparam sequenceMessageAlign center
-autonumber
+hide footbox
 
-actor "Personal" as Personal
+actor Personal
 participant "Bokningssystem" as System
 participant "ReturnService" as Service
-participant "BookingRepository" as Repository
+participant "BookingRepository" as Repo
 
-== 1. Sök bokning ==
-
-Personal -> System : Sök bokning(bokningsnummer)
+Personal -> System : Ange bokningsnummer
 activate System
 
-System -> Service : GetBooking(bokningsnummer)
+System -> Service : GetBooking(nummer)
 activate Service
-
-Service -> Repository : GetBooking(bokningsnummer)
-activate Repository
-Repository --> Service : Booking eller null
-deactivate Repository
-
-Service --> System : Booking eller null
+Service -> Repo : GetBooking(nummer)
+activate Repo
+Repo --> Service : Booking / null
+deactivate Repo
+Service --> System : Booking / null
 deactivate Service
 
 alt Bokningen saknas
-    System --> Personal : Visa "Bokningen hittades inte"
+    System --> Personal : Bokningen hittades inte
 
 else Bokningen finns
-    System --> Personal : Visa bokningsuppgifter
+    System --> Personal : Visa bokning och status
 
     alt Status är inte CheckedOut
-        System --> Personal : Visa "Uthyrningen är inte påbörjad"
+        System --> Personal : Återlämning nekas
 
     else Status är CheckedOut
+        System --> Personal : Bekräfta återlämning?
+        Personal -> System : Ja / Nej
 
-        == 2. Bekräfta återlämning ==
+        alt Nej
+            System --> Personal : Återlämning avbruten
 
-        Personal -> System : Bekräfta återlämning
+        else Ja
+            System -> Service : RegisterReturn(nummer, tid)
+            activate Service
 
-        System -> Service : RegisterReturn(bokningsnummer)
-        activate Service
+            Service -> Repo : TryRegisterReturn(nummer, tid)
+            activate Repo
 
-        Service -> Service : Registrera återlämningstid
-        Service -> Service : Förbered statusändring till Returned
+            alt Ogiltig status
+                Repo --> Service : InvalidStatus
+                Service --> System : InvalidStatus
+                System --> Personal : Återlämning nekas
 
-        == 3. Kontrollera och spara ==
+            else Simulerat lagringsfel
+                Repo --> Service : SaveFailed
+                Service --> System : SaveFailed
+                System --> Personal : Registrering misslyckades
 
-        Service -> Repository : TryRegisterReturn(bokningsnummer, returnedAt)
-        activate Repository
+            else Registrering lyckas
+                Repo -> Repo : Ändra status och spara tid
+                Repo --> Service : Success
+                Service --> System : Success
+                System --> Personal : Visa bekräftelse
+            end
 
-        note right of Repository
-          Kontrollera aktuell bokningsstatus.
-
-          Om status är CheckedOut:
-          - Spara återlämningstid
-          - Ändra status till Returned
-
-          Ändringarna genomförs tillsammans.
-
-          Vid fel ska tidigare status
-          och data bevaras.
-        end note
-
-        alt Status är inte längre CheckedOut
-            Repository --> Service : InvalidStatus
-            Service --> System : ReturnResult(InvalidStatus)
-            System --> Personal : Visa "Återlämningen kan inte registreras"
-
-        else Lagringen misslyckas
-            Repository --> Service : SaveFailed
-            Service --> System : ReturnResult(SaveFailed)
-            System --> Personal : Visa "Återlämningen kunde inte sparas"
-
-        else Registreringen lyckas
-            Repository --> Service : Success
-            Service --> System : ReturnResult(Success)
-            System --> Personal : Visa bekräftelse
+            deactivate Repo
+            deactivate Service
         end
-
-        deactivate Repository
-        deactivate Service
     end
 end
 
 deactivate System
-
 @enduml
