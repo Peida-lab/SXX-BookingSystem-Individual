@@ -1,3 +1,4 @@
+
 @startuml
 title US-37 - Registrera återlämning
 
@@ -9,7 +10,7 @@ start
 :Hämta bokning;
 
 if (Finns bokningen?) then (Nej)
-  :Visa felmeddelande;
+  :Visa "Bokningen hittades inte";
   stop
 else (Ja)
   :Visa bokningsuppgifter;
@@ -25,9 +26,26 @@ endif
 
 |System|
 :Registrera återlämningstid;
-:Ändra bokningsstatus till Returned;
-:Spara ändringarna;
-:Visa bekräftelse;
+:Förbered statusändring till Returned;
+
+:Kontrollera aktuell status och
+försök spara återlämningen;
+
+if (Är status fortfarande CheckedOut?) then (Nej)
+  :Visa "Återlämningen kan inte registreras";
+  stop
+else (Ja)
+endif
+
+if (Lyckades lagringen?) then (Nej)
+  :Visa "Återlämningen kunde inte sparas";
+  :Behåll tidigare bokningsstatus;
+  stop
+else (Ja)
+  :Spara återlämningstid och
+ändra bokningsstatus till Returned;
+  :Visa bekräftelse;
+endif
 
 stop
 @enduml
