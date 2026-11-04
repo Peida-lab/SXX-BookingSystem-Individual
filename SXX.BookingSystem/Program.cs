@@ -8,77 +8,79 @@ using SXX.BookingSystem.Services;
 var repository = new BookingRepository();
 var returnService = new ReturnService(repository);
 
-// Skapa testbokningar med olika statusar
+// Testbokningar med olika statusar
 repository.AddBooking(new Booking("1001", BookingStatus.CheckedOut));
 repository.AddBooking(new Booking("1002", BookingStatus.Confirmed));
 repository.AddBooking(new Booking("1003", BookingStatus.Returned));
 repository.AddBooking(new Booking("1004", BookingStatus.Cancelled));
 
-// Starta programmet
 Console.WriteLine("=== SXX Bokningssystem ===");
 Console.WriteLine("Registrera återlämning");
-Console.WriteLine();
 
-Console.WriteLine("=== Testbokningar ===");
-Console.WriteLine("1001 - Utlämnad (CheckedOut)");
-Console.WriteLine("1002 - Bekräftad (Confirmed)");
-Console.WriteLine("1003 - Återlämnad (Returned)");
-Console.WriteLine("1004 - Avbokad (Cancelled)");
-Console.WriteLine();
-
-// Ange bokningsnummer
-Console.Write("Ange bokningsnummer: ");
-string bookingNumber = (Console.ReadLine() ?? "").Trim();
-
-// Hämta bokningen
-var foundBooking = returnService.GetBooking(bookingNumber);
-
-if (foundBooking is null)
+while (true)
 {
-    Console.WriteLine("Bokningen hittades inte.");
-    return;
-}
+    Console.WriteLine();
+    Console.WriteLine("=== Testbokningar ===");
+    Console.WriteLine("1001 - Utlämnad från början");
+    Console.WriteLine("1002 - Bekräftad");
+    Console.WriteLine("1003 - Redan återlämnad");
+    Console.WriteLine("1004 - Avbokad");
+    Console.WriteLine("0 - Avsluta programmet");
+    Console.WriteLine();
 
-// Visa bokningsinformation
-Console.WriteLine($"Bokningsnummer: {foundBooking.BookingNumber}");
-Console.WriteLine($"Status: {foundBooking.Status}");
+    Console.Write("Ange bokningsnummer: ");
+    string bookingNumber = (Console.ReadLine() ?? "").Trim();
 
-// Kontrollera bokningsstatus
-if (foundBooking.Status != BookingStatus.CheckedOut)
-{
-    Console.WriteLine("Uthyrningen är inte påbörjad eller är redan avslutad.");
-    return;
-}
-
-// Bekräfta återlämning
-Console.Write("Vill du registrera återlämningen? (j/n): ");
-string answer = (Console.ReadLine() ?? "").Trim();
-
-if (!answer.Equals("j", StringComparison.OrdinalIgnoreCase))
-{
-    Console.WriteLine("Återlämningen avbröts.");
-    return;
-}
-
-// Registrera återlämningen
-var result = returnService.RegisterReturn(
-    bookingNumber,
-    DateTimeOffset.Now);
-
-// Visa resultatet
-switch (result)
-{
-    case ReturnSaveResult.Success:
-        Console.WriteLine("Återlämningen har registrerats!");
-        Console.WriteLine($"Ny status: {foundBooking.Status}");
-        Console.WriteLine($"Återlämningstid: {foundBooking.ReturnedAt}");
+    if (bookingNumber == "0")
+    {
+        Console.WriteLine("Programmet avslutas.");
         break;
+    }
 
-    case ReturnSaveResult.InvalidStatus:
-        Console.WriteLine("Återlämningen kan inte registreras.");
-        break;
+    var foundBooking = returnService.GetBooking(bookingNumber);
 
-    case ReturnSaveResult.SaveFailed:
-        Console.WriteLine("Återlämningen kunde inte sparas.");
-        break;
+    if (foundBooking is null)
+    {
+        Console.WriteLine("Bokningen hittades inte.");
+        continue;
+    }
+
+    Console.WriteLine($"Bokningsnummer: {foundBooking.BookingNumber}");
+    Console.WriteLine($"Status: {foundBooking.Status}");
+
+    if (foundBooking.Status != BookingStatus.CheckedOut)
+    {
+        Console.WriteLine("Uthyrningen är inte påbörjad eller är redan avslutad.");
+        continue;
+    }
+
+    Console.Write("Vill du registrera återlämningen? (j/n): ");
+    string answer = (Console.ReadLine() ?? "").Trim();
+
+    if (!answer.Equals("j", StringComparison.OrdinalIgnoreCase))
+    {
+        Console.WriteLine("Återlämningen avbröts.");
+        continue;
+    }
+
+    var result = returnService.RegisterReturn(
+        bookingNumber,
+        DateTimeOffset.Now);
+
+    switch (result)
+    {
+        case ReturnSaveResult.Success:
+            Console.WriteLine("Återlämningen har registrerats!");
+            Console.WriteLine($"Ny status: {foundBooking.Status}");
+            Console.WriteLine($"Återlämningstid: {foundBooking.ReturnedAt}");
+            break;
+
+        case ReturnSaveResult.InvalidStatus:
+            Console.WriteLine("Återlämningen kan inte registreras.");
+            break;
+
+        case ReturnSaveResult.SaveFailed:
+            Console.WriteLine("Återlämningen kunde inte sparas.");
+            break;
+    }
 }
