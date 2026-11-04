@@ -1,0 +1,33 @@
+@startuml
+title US-37 - Registrera återlämning
+
+|Personal|
+start
+:Sök bokning med bokningsnummer;
+
+|System|
+:Hämta bokning;
+
+if (Finns bokningen?) then (Nej)
+  :Visa felmeddelande;
+  stop
+else (Ja)
+  :Visa bokningsuppgifter;
+endif
+
+if (Har bokningen status CheckedOut?) then (Nej)
+  :Visa "Uthyrningen är inte påbörjad";
+  stop
+else (Ja)
+  |Personal|
+  :Bekräfta återlämning;
+endif
+
+|System|
+:Registrera återlämningstid;
+:Ändra bokningsstatus till Returned;
+:Spara ändringarna;
+:Visa bekräftelse;
+
+stop
+@enduml
